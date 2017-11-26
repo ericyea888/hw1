@@ -2,47 +2,53 @@
 Data Mining 2017 Fall
 HW1: Python Practice
 """
+
+## Necessary libraries
+import pandas as pd
+import numpy as np
 import math
-import csv
-import re
 
-
-#Show Data
-def grades(file_path):
-    read_file = open(file_path, 'r')
- 
-    #define each row name you want to use when read from .csv file
-    reader=csv.DictReader(read_file, ["PassengerId","Survived","Pclass","Name","Sex","Age","SibSp","Parch","Ticket"])
-    header=reader.fieldnames
-    a_line_after_header = next(reader)
+def dataclean(data):
+    ## remove columns
+    data = data.drop(['Ticket','Name'],axis=1)
     
-    a=()
-    a=list(a)
-    i=1
-    showMax=100
-
-    for row in reader:
-        if (row['Name']<>"" and row['Pclass']<>""and row['Sex']<>""and row['Age']<>""and row['SibSp']<>""and row['Parch']<>""and i<=showMax):
-
-            #Just show you want to see the data
-            a.insert(0,(row['Age'],row['Name'],row['Pclass'],row['Sex'],row['SibSp'],row['Parch']))
-            i=i+1
-        
-
-    read_file.close()
-
-    #Sorted by x[0] means row['Age'], x[1] means row['Name']...etc
-    test_array =sorted(a,key=lambda x:x[0])
- 
-    tuple_grades = list(test_array)
-
-    return  tuple_grades
-
-
+    ## if null then fill 0
+    data.Sex.fillna('0', inplace=True)
+    data.Cabin.fillna('0', inplace=True)
+    data.Embarked.fillna('0', inplace=True)
+    
+    ## remove null rows
+    data = data.dropna()
+    
+    ## fix age
+    data["Age"] = (data["Age"]+0.6).apply(np.fix).apply(np.int)
+    
+    ## data transfer
+    data.loc[data.Sex == 'male', 'Sex'] = 1
+    data.loc[data.Sex == 'female', 'Sex'] = 0
+    data.loc[data.Embarked == 'C', 'Embarked'] = 1
+    data.loc[data.Embarked == 'Q', 'Embarked'] = 2
+    data.loc[data.Embarked == 'S', 'Embarked'] = 3
+    data.loc[data.Cabin.str[0] == 'A', 'Cabin'] = 1
+    data.loc[data.Cabin.str[0] == 'B', 'Cabin'] = 2
+    data.loc[data.Cabin.str[0] == 'C', 'Cabin'] = 3
+    data.loc[data.Cabin.str[0] == 'D', 'Cabin'] = 4
+    data.loc[data.Cabin.str[0] == 'E', 'Cabin'] = 5
+    data.loc[data.Cabin.str[0] == 'F', 'Cabin'] = 6
+    data.loc[data.Cabin.str[0] == 'G', 'Cabin'] = 7
+    data.loc[data.Cabin.str[0] == 'T', 'Cabin'] = 8
+            
+    return data
 
 if __name__ == "__main__":
-    pro_2_tuple = grades('train.csv')
-
-    for x in range(1, 100):
-        print (pro_2_tuple[x][0],pro_2_tuple[x][1],pro_2_tuple[x][2],pro_2_tuple[x][3],pro_2_tuple[x][4],pro_2_tuple[x][5])
+    ## import train data
+    train_data = pd.read_csv('train.csv', index_col='PassengerId')
+    
+    train_data = dataclean(train_data)
+    
+    ## sort
+    train_data = train_data.sort_values(by = "Age")
+    
+    print train_data
+    
 
